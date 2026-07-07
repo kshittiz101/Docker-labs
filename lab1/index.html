@@ -1,0 +1,1721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAGARMĀTHĀ — A Travel Atelier for the High Himal</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@500&display=swap"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.13/dist/lenis.min.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.183/build/three.module.js"
+        }
+      }
+    </script>
+
+    <style>
+      :root {
+        --bg: #000000;
+        --deep-black: #0a0a0a;
+        --card: #1a1a1a;
+        --text: #ffffff;
+        --text-soft: rgba(255, 255, 255, 0.6);
+        --text-mute: rgba(255, 255, 255, 0.3);
+        --line: rgba(255, 255, 255, 0.2);
+        --highlight: #ea0000;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        background: var(--bg);
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Inter", sans-serif;
+        color: var(--text);
+        overflow-x: hidden;
+        cursor: none;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection {
+        background: var(--highlight);
+        color: #fff;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      .font-display {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        letter-spacing: -0.025em;
+        line-height: 0.88;
+      }
+      .font-display-it {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-style: italic;
+        letter-spacing: -0.025em;
+        line-height: 0.88;
+      }
+      .font-mono {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 500;
+      }
+      .label {
+        font-family: "IBM Plex Mono", monospace;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        font-size: 11px;
+      }
+
+      #particle-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      #custom-cursor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #fff;
+        mix-blend-mode: difference;
+        pointer-events: none;
+        z-index: 9999;
+        will-change: transform;
+        transition:
+          width 0.3s ease,
+          height 0.3s ease,
+          opacity 0.3s ease;
+      }
+      @media (hover: none), (pointer: coarse) {
+        #custom-cursor {
+          display: none !important;
+        }
+        body,
+        a,
+        button {
+          cursor: auto;
+        }
+      }
+
+      .line-mask {
+        overflow: hidden;
+        display: block;
+      }
+      .line {
+        transform: translateY(110%);
+        will-change: transform;
+        display: block;
+      }
+
+      .rise-image {
+        transform: translateY(85%);
+        opacity: 0;
+        transition:
+          transform 1.8s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+        will-change: transform, opacity;
+      }
+      .rise-image.is-in {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .word {
+        display: inline-block;
+        opacity: 0;
+        filter: blur(12px) brightness(30%);
+        will-change: filter, opacity;
+      }
+
+      .media {
+        position: relative;
+        overflow: hidden;
+        background: var(--card);
+      }
+      .media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .media::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0) 35%,
+          rgba(0, 0, 0, 0.85)
+        );
+        opacity: 0.55;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+      }
+      .media:hover::after {
+        opacity: 1;
+      }
+      .media:hover img {
+        transform: scale(1.05);
+      }
+
+      .hairline {
+        width: 4rem;
+        height: 2px;
+        background: var(--highlight);
+        box-shadow: 0 0 16px rgba(234, 0, 0, 0.55);
+      }
+
+      .pin-track {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 0 6rem;
+        will-change: transform;
+      }
+      @media (max-width: 1023px) {
+        .pin-track {
+          position: relative;
+          height: auto;
+          padding: 0 1.25rem;
+          overflow-x: auto;
+          transform: none !important;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+        }
+        .pin-track > * {
+          scroll-snap-align: start;
+        }
+      }
+
+      .dest-card {
+        flex-shrink: 0;
+        width: 340px;
+      }
+      @media (max-width: 1023px) {
+        .dest-card {
+          width: 78vw;
+        }
+      }
+
+      .marquee-track {
+        display: inline-flex;
+        gap: 3rem;
+        animation: marquee 55s linear infinite;
+        white-space: nowrap;
+        will-change: transform;
+      }
+      @keyframes marquee {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(-50%);
+        }
+      }
+
+      .hover-underline {
+        position: relative;
+        display: inline-block;
+      }
+      .hover-underline::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -3px;
+        width: 100%;
+        height: 1px;
+        background: var(--highlight);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .hover-underline:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+
+      .nav-link {
+        position: relative;
+      }
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -4px;
+        width: 100%;
+        height: 1px;
+        background: var(--highlight);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .nav-link:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
+
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #000;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .grain {
+        position: relative;
+      }
+      .grain::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+        opacity: 0.04;
+        mix-blend-mode: overlay;
+        z-index: 2;
+      }
+
+      .cta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 0.95rem 1.75rem;
+        transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+      }
+      .cta-pill:hover {
+        border-color: var(--highlight);
+        color: #fff;
+        background: rgba(234, 0, 0, 0.08);
+      }
+      .cta-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--highlight);
+        box-shadow: 0 0 10px rgba(234, 0, 0, 0.7);
+      }
+
+      .stat-num {
+        font-family: "Montserrat", sans-serif;
+        font-weight: 900;
+        font-size: clamp(3rem, 7vw, 6rem);
+        line-height: 0.85;
+        letter-spacing: -0.04em;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+        .line {
+          transform: none !important;
+        }
+        .rise-image {
+          transform: none;
+          opacity: 1;
+        }
+        .word {
+          opacity: 1 !important;
+          filter: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="grain">
+    <div id="custom-cursor"></div>
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- ============================ NAV ============================ -->
+    <header
+      class="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-5 flex items-center justify-between mix-blend-difference"
+    >
+      <a href="#" class="flex items-center gap-3">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path
+            d="M2 20 L11 2 L20 20 Z"
+            stroke="#fff"
+            stroke-width="1"
+            fill="none"
+          />
+          <path
+            d="M6 14 L11 6 L16 14"
+            stroke="#ea0000"
+            stroke-width="1"
+            fill="none"
+          />
+          <circle cx="11" cy="14" r="1.2" fill="#ea0000" />
+        </svg>
+        <span class="font-display text-base tracking-tight">SAGARMĀTHĀ</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-10 label text-white/80">
+        <a href="#manifesto" class="nav-link">Atelier</a>
+        <a href="#destinations" class="nav-link">Routes</a>
+        <a href="#featured" class="nav-link">Field Notes</a>
+        <a href="#journal" class="nav-link">Archive</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+      <a
+        href="#contact"
+        class="label text-white/80 hover-underline hidden md:inline-block"
+        >Begin a brief →</a
+      >
+      <button class="md:hidden label text-white/80">Menu</button>
+    </header>
+
+    <!-- ============================ HERO ============================ -->
+    <section
+      class="relative min-h-screen w-full overflow-hidden"
+      style="z-index: 2"
+    >
+      <div class="absolute inset-0 flex items-end pointer-events-none">
+        <div
+          class="w-full px-6 md:px-12 pb-10 md:pb-14 flex items-end justify-between label text-white/30"
+        >
+          <div class="flex items-center gap-3">
+            <span
+              class="inline-block w-1.5 h-1.5 rounded-full bg-[#ea0000] animate-pulse"
+            ></span>
+            <span>Himal Atelier · Est. 2014</span>
+          </div>
+          <div class="hidden md:block">N 27.67° / E 85.32° — Patan, 06:14</div>
+          <div>Scroll ↓</div>
+        </div>
+      </div>
+
+      <div
+        class="relative min-h-screen flex items-center px-6 md:px-12 pt-32 pb-24"
+      >
+        <div class="grid grid-cols-12 gap-6 w-full items-end">
+          <!-- LEFT: headline -->
+          <div class="col-span-12 lg:col-span-7 relative z-10">
+            <div class="hairline mb-8"></div>
+            <div class="label text-white/40 mb-6">
+              № 001 — The Himal Series, Volume XI
+            </div>
+            <h1
+              class="font-display text-[14vw] md:text-[10vw] lg:text-[8.4vw] leading-[0.85]"
+            >
+              <span class="line-mask"
+                ><span class="line block" data-line>The atlas of</span></span
+              >
+              <span class="line-mask"
+                ><span class="line block" data-line>stone, snow,</span></span
+              >
+              <span class="line-mask"
+                ><span class="line block font-display-it" data-line
+                  >prayer flags.</span
+                ></span
+              >
+            </h1>
+            <div
+              class="mt-10 max-w-md text-white/60 text-[15px] leading-relaxed"
+            >
+              A travel atelier curating high-Himalayan routes for travelers who
+              would rather walk one valley by its winter light than fly over ten
+              by their gift-shop postcards.
+            </div>
+            <div class="mt-10 flex items-center gap-4 flex-wrap">
+              <a href="#destinations" class="cta-pill"
+                ><span class="dot"></span>See the routes</a
+              >
+              <a href="#manifesto" class="label text-white/50 hover-underline"
+                >Read the manifesto</a
+              >
+            </div>
+          </div>
+
+          <!-- RIGHT: image rising -->
+          <div class="col-span-12 lg:col-span-5 relative">
+            <div class="relative aspect-[3/4] w-full overflow-hidden">
+              <div class="rise-image absolute inset-0" data-rise>
+                <img
+                  src="https://picsum.photos/seed/sagarmatha-hero-trekker-prayer/800/1100"
+                  alt="Trekker on a Himalayan ridge"
+                  class="w-full h-full object-cover"
+                  style="filter: contrast(1.05) saturate(0.85)"
+                />
+              </div>
+              <div
+                class="absolute top-4 left-4 label text-white/80 mix-blend-difference"
+              >
+                FRAME 01 / 47
+              </div>
+              <div
+                class="absolute bottom-4 right-4 label text-white/80 mix-blend-difference text-right"
+              >
+                Khumbu<br />27.99°N
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coordinates marquee at base -->
+      <div
+        class="absolute bottom-0 left-0 w-full overflow-hidden border-t border-white/10 py-4"
+        style="background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px)"
+      >
+        <div class="marquee-track label text-white/40">
+          <span>27.99°N SAGARMATHA — NEPAL</span><span>·</span>
+          <span>28.53°N ANNAPURNA — NEPAL</span><span>·</span>
+          <span>29.18°N UPPER MUSTANG — NEPAL</span><span>·</span>
+          <span>28.20°N LANGTANG — NEPAL</span><span>·</span>
+          <span>27.70°N KANCHENJUNGA — NEPAL</span><span>·</span>
+          <span>29.05°N UPPER DOLPO — NEPAL</span><span>·</span>
+          <span>29.53°N RARA LAKE — NEPAL</span><span>·</span>
+          <span>27.47°N LUMBINI — NEPAL</span><span>·</span>
+          <span>27.99°N SAGARMATHA — NEPAL</span><span>·</span>
+          <span>28.53°N ANNAPURNA — NEPAL</span><span>·</span>
+          <span>29.18°N UPPER MUSTANG — NEPAL</span><span>·</span>
+          <span>28.20°N LANGTANG — NEPAL</span><span>·</span>
+          <span>27.70°N KANCHENJUNGA — NEPAL</span><span>·</span>
+          <span>29.05°N UPPER DOLPO — NEPAL</span><span>·</span>
+          <span>29.53°N RARA LAKE — NEPAL</span><span>·</span>
+          <span>27.47°N LUMBINI — NEPAL</span><span>·</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ MANIFESTO (scrub-blur-words) ============================ -->
+    <section
+      id="manifesto"
+      class="relative py-32 md:py-48 px-6 md:px-12"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-4 mb-16">
+          <div class="hairline"></div>
+          <span class="label text-white/40">Manifesto · 01</span>
+        </div>
+
+        <h2 class="font-display text-3xl md:text-5xl mb-20 max-w-3xl">
+          Travel, as we<br />understand it.
+        </h2>
+
+        <div
+          id="manifesto-container"
+          class="font-display text-[clamp(1.8rem,4vw,3.2rem)] leading-[1.2] max-w-5xl"
+        >
+          <p id="manifesto-text">
+            We do not chase summits. We do not stack base camps. Sagarmāthā
+            exists for the traveler who would rather walk one valley slowly than
+            fly over ten. We move at the pace of acclimatization, drink tea at
+            the same teahouse twice, and pass every mani wall to the left. The
+            mountains are not going anywhere. Neither, for a while, are we.
+          </p>
+        </div>
+
+        <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-12 max-w-4xl">
+          <div>
+            <div class="label text-[#ea0000] mb-3">Principle 01</div>
+            <div class="font-display text-xl mb-2">Slowness</div>
+            <div class="text-white/50 text-sm leading-relaxed">
+              Minimum fourteen days on the trail. Acclimatization is not
+              optional. The mountain sets the pace, not the itinerary.
+            </div>
+          </div>
+          <div>
+            <div class="label text-[#ea0000] mb-3">Principle 02</div>
+            <div class="font-display text-xl mb-2">Reverence</div>
+            <div class="text-white/50 text-sm leading-relaxed">
+              Mani walls passed to the left. Chortens circled clockwise. No
+              drones over monasteries. The sacred is not a content opportunity.
+            </div>
+          </div>
+          <div>
+            <div class="label text-[#ea0000] mb-3">Principle 03</div>
+            <div class="font-display text-xl mb-2">Smallness</div>
+            <div class="text-white/50 text-sm leading-relaxed">
+              Twelve trekkers per year. Six routes. One curated brief at a time.
+              We refuse more than we accept.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ROUTES — HORIZONTAL PIN SCROLL ============================ -->
+    <section
+      id="destinations"
+      class="relative"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="px-6 md:px-12 pt-32 md:pt-48 pb-12">
+        <div class="flex items-end justify-between flex-wrap gap-8">
+          <div>
+            <div class="flex items-center gap-4 mb-6">
+              <div class="hairline"></div>
+              <span class="label text-white/40">The Routes · 02</span>
+            </div>
+            <h2 class="font-display text-4xl md:text-6xl max-w-3xl">
+              Eight valleys,<br />curated annually.
+            </h2>
+          </div>
+          <div class="max-w-md text-white/50 text-sm leading-relaxed">
+            Each route is researched for fourteen months before it enters the
+            rotation. We dispatch a photographer, a writer, and a local guide.
+            The brief is built only after they return — by foot, never by
+            helicopter.
+          </div>
+        </div>
+      </div>
+
+      <!-- Pin track -->
+      <div class="pin-viewport relative" id="pin-viewport">
+        <div class="pin-track" id="pin-track">
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/khumbu-kala-patthar-dawn/700/950"
+                alt="Khumbu"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 01 · Khumbu</div>
+                <div class="font-display text-2xl mt-1">Sagarmatha</div>
+              </div>
+              <div class="label text-white/40">27.99°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              Kala Patthar at dawn, 5,545 m. 18 nights. October only.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/annapurna-sanctuary-south-face/700/950"
+                alt="Annapurna"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 02 · Annapurna</div>
+                <div class="font-display text-2xl mt-1">Sanctuary</div>
+              </div>
+              <div class="label text-white/40">28.53°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              The South Face at first light. 14 nights. November.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/mustang-lo-manthang-wind-caves/700/950"
+                alt="Upper Mustang"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 03 · Mustang</div>
+                <div class="font-display text-2xl mt-1">Lo Manthang</div>
+              </div>
+              <div class="label text-white/40">29.18°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              The forbidden kingdom, wind-carved caves. 12 nights. June.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/langtang-tamang-village-yak/700/950"
+                alt="Langtang"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 04 · Langtang</div>
+                <div class="font-display text-2xl mt-1">Valley</div>
+              </div>
+              <div class="label text-white/40">28.20°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              Tamang villages, yak pastures, rhododendron. 11 nights. April.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/kanchenjunga-five-treasures-snow/700/950"
+                alt="Kanchenjunga"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 05 · Kanchenjunga</div>
+                <div class="font-display text-2xl mt-1">North Base</div>
+              </div>
+              <div class="label text-white/40">27.70°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              The five treasures of the great snow. 22 nights. March.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/dolpo-phoksundo-turquoise-lake/700/950"
+                alt="Upper Dolpo"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 06 · Dolpo</div>
+                <div class="font-display text-2xl mt-1">Phoksundo</div>
+              </div>
+              <div class="label text-white/40">29.05°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              Snow leopard country, turquoise lake at 3,612 m. 16 nights.
+              September.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/rara-alpine-pine-water/700/950"
+                alt="Rara Lake"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 07 · Mugu</div>
+                <div class="font-display text-2xl mt-1">Rara Lake</div>
+              </div>
+              <div class="label text-white/40">29.53°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              Alpine lake at 2,990 m, pine forest, no roads. 8 nights. May.
+            </div>
+          </div>
+
+          <div class="dest-card">
+            <div class="media aspect-[3/4]">
+              <img
+                src="https://picsum.photos/seed/lumbini-bodhi-tree-maya-devi/700/950"
+                alt="Lumbini"
+              />
+            </div>
+            <div class="mt-5 flex justify-between items-start">
+              <div>
+                <div class="label text-white/40">№ 08 · Lumbini</div>
+                <div class="font-display text-2xl mt-1">Maya Devi</div>
+              </div>
+              <div class="label text-white/40">27.47°N</div>
+            </div>
+            <div class="mt-3 text-[13px] text-white/50 leading-relaxed">
+              Birthplace of the Buddha. Monasteries of eleven nations. 5 nights.
+              Any season.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="px-6 md:px-12 py-10 hidden lg:block">
+        <div class="flex items-center gap-6">
+          <span class="label text-white/40">Route 01 / 08</span>
+          <div class="flex-1 h-px bg-white/15 relative">
+            <div
+              id="pin-progress"
+              class="absolute left-0 top-0 h-full bg-[#ea0000]"
+              style="width: 0%"
+            ></div>
+          </div>
+          <span class="label text-white/40" id="pin-index">01</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FEATURED — image-rises-behind-text (MUSTANG) ============================ -->
+    <section
+      id="featured"
+      class="relative py-32 md:py-48 px-6 md:px-12 overflow-hidden"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-12">
+          <div class="hairline"></div>
+          <span class="label text-white/40">Featured Route · 03</span>
+        </div>
+
+        <!-- The signature image-rises-behind-text block -->
+        <div class="relative">
+          <!-- Background image that rises -->
+          <div
+            class="absolute inset-0 flex items-end justify-center pointer-events-none"
+          >
+            <div class="rise-image w-full h-[75%]" data-rise>
+              <img
+                src="https://picsum.photos/seed/mustang-feature-lo-manthang-wall/1600/1000"
+                alt="Lo Manthang, Mustang"
+                class="w-full h-full object-cover"
+                style="filter: contrast(1.08) saturate(0.85)"
+              />
+            </div>
+          </div>
+
+          <!-- Foreground text -->
+          <div class="relative z-10 pt-8 pb-[60%] md:pb-[55%]">
+            <div class="label text-white/40 mb-6">
+              29.18°N · Forbidden Kingdom
+            </div>
+            <h2 class="font-display text-[18vw] md:text-[14vw] leading-[0.82]">
+              <span class="block">MUSTANG</span>
+              <span
+                class="block font-display-it text-[#ea0000]"
+                style="mix-blend-mode: screen"
+                >LO MANTHANG</span
+              >
+            </h2>
+          </div>
+        </div>
+
+        <!-- Below: editorial copy -->
+        <div class="mt-20 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16">
+          <div class="md:col-span-5">
+            <div class="label text-white/40 mb-4">Field Note · 18 min read</div>
+            <h3 class="font-display text-3xl md:text-4xl leading-tight">
+              "The wind does not stop. The king does not leave. The caves
+              remember everyone who has slept in them."
+            </h3>
+            <div class="mt-6 text-white/50 text-sm">
+              — Tashi Gurung, photographer, Sagarmāthā Field Team
+            </div>
+          </div>
+          <div class="md:col-span-6 md:col-start-7">
+            <div class="text-white/70 text-[15px] leading-relaxed space-y-5">
+              <p>
+                A walled city of eight hundred souls at 3,840 metres, where the
+                last king of Mustang still receives visitors in a courtyard his
+                family has occupied since 1380. The route in takes twelve days
+                on foot, crossing four passes above 4,000 m, and ends at a red
+                ochre wall with a single wooden gate.
+              </p>
+              <p>
+                Our brief runs twelve nights in June, when the barley is green
+                and the wind — which the locals call the breath of the ancestors
+                — drops for an hour each morning. We stay in family homes, eat
+                buckwheat roti, and walk the caves above the city with a monk
+                from the Chhoede Gompa.
+              </p>
+              <p>
+                Two photographers per departure. Six travelers total. One guide
+                who was born inside the wall.
+              </p>
+            </div>
+            <div class="mt-10 flex items-center gap-4 flex-wrap">
+              <a href="#contact" class="cta-pill"
+                ><span class="dot"></span>Reserve a brief</a
+              >
+              <a href="#" class="label text-white/50 hover-underline"
+                >Read full field note</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ARCHIVE GRID ============================ -->
+    <section
+      id="journal"
+      class="relative py-32 md:py-48 px-6 md:px-12"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-end justify-between flex-wrap gap-8 mb-16">
+          <div>
+            <div class="flex items-center gap-4 mb-6">
+              <div class="hairline"></div>
+              <span class="label text-white/40">Field Archive · 04</span>
+            </div>
+            <h2 class="font-display text-4xl md:text-6xl">
+              Selected frames<br />from the trail.
+            </h2>
+          </div>
+          <div class="max-w-sm text-white/50 text-sm leading-relaxed">
+            Every Sagarmāthā brief is documented by a resident photographer. A
+            selection from the past eleven seasons on the trail.
+          </div>
+        </div>
+
+        <!-- 7-image editorial grid -->
+        <div class="grid grid-cols-12 gap-3 md:gap-5">
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-7 aspect-[16/10] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-khumbu-mani-wall-stones/1400/900"
+              alt="Mani wall, Khumbu"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 047 · Khumbu</div>
+                <div class="font-display text-2xl md:text-3xl mt-1">
+                  Mani wall, Pangboche
+                </div>
+              </div>
+              <div class="label text-white/70">Oct 2024</div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-5 aspect-[16/10] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-mustang-prayer-flags-pass/900/900"
+              alt="Prayer flags, Mustang"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 044 · Mustang</div>
+                <div class="font-display text-2xl mt-1">Flags at 4,230 m</div>
+              </div>
+              <div class="label text-white/70">Jun 2024</div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-4 aspect-[3/4] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-annapurna-teahouse-window/800/1100"
+              alt="Teahouse window"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 041 · Annapurna</div>
+                <div class="font-display text-2xl mt-1">Tea, Chhomrong</div>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-4 aspect-[3/4] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-dolpo-yak-caravan-pass/800/1100"
+              alt="Yak caravan"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 038 · Dolpo</div>
+                <div class="font-display text-2xl mt-1">Yaks, Kang La</div>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-4 aspect-[3/4] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-langtang-tamang-mother/800/1100"
+              alt="Tamang woman"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 035 · Langtang</div>
+                <div class="font-display text-2xl mt-1">Kyanjin morning</div>
+              </div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-7 aspect-[16/10] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-kanchenjunga-north-face-dawn/1400/900"
+              alt="Kanchenjunga dawn"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 031 · Kanchenjunga</div>
+                <div class="font-display text-2xl md:text-3xl mt-1">
+                  North Face, 5,143 m
+                </div>
+              </div>
+              <div class="label text-white/70">Mar 2024</div>
+            </div>
+          </a>
+
+          <a
+            href="#"
+            class="media col-span-12 md:col-span-5 aspect-[16/10] group"
+          >
+            <img
+              src="https://picsum.photos/seed/archive-lumbini-monk-bodhi-walk/900/900"
+              alt="Lumbini monk"
+            />
+            <div
+              class="absolute bottom-5 left-5 right-5 z-10 flex justify-between items-end"
+            >
+              <div>
+                <div class="label text-white/70">№ 028 · Lumbini</div>
+                <div class="font-display text-2xl mt-1">Bodhi walk, dawn</div>
+              </div>
+              <div class="label text-white/70">Feb 2023</div>
+            </div>
+          </a>
+        </div>
+
+        <div class="mt-16 flex justify-center">
+          <a href="#" class="cta-pill"
+            ><span class="dot"></span>View full archive — 412 frames</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ STATS / NUMBERS ============================ -->
+    <section
+      class="relative py-32 md:py-44 px-6 md:px-12 border-t border-white/10"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-20">
+          <div class="hairline"></div>
+          <span class="label text-white/40">By the Numbers · 05</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-6">
+          <div>
+            <div class="stat-num" data-target="11">0</div>
+            <div class="label text-white/40 mt-4">Years on the trail</div>
+            <div class="text-white/50 text-sm mt-3 leading-relaxed">
+              Founded in Patan, 2014. Three partners, one darkroom, a printing
+              press in Lalitpur.
+            </div>
+          </div>
+          <div>
+            <div class="stat-num" data-target="47">0</div>
+            <div class="label text-white/40 mt-4">Routes researched</div>
+            <div class="text-white/50 text-sm mt-3 leading-relaxed">
+              Eight currently in rotation. The rest are quietly waiting for the
+              right season.
+            </div>
+          </div>
+          <div>
+            <div class="stat-num" data-target="312">0</div>
+            <div class="label text-white/40 mt-4">Trekkers, total</div>
+            <div class="text-white/50 text-sm mt-3 leading-relaxed">
+              We refuse more briefs than we accept. The mountain decides the
+              pace, not us.
+            </div>
+          </div>
+          <div>
+            <div class="stat-num" data-target="22">0</div>
+            <div class="label text-white/40 mt-4">Field guides</div>
+            <div class="text-white/50 text-sm mt-3 leading-relaxed">
+              Sherpa, Tamang, Gurung, Thakali, Magar. Each one born on the route
+              they walk.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ PROCESS ============================ -->
+    <section
+      class="relative py-32 md:py-44 px-6 md:px-12"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-16">
+          <div class="hairline"></div>
+          <span class="label text-white/40">The Process · 06</span>
+        </div>
+
+        <h2 class="font-display text-4xl md:text-6xl mb-20 max-w-4xl">
+          How a brief<br />is built.
+        </h2>
+
+        <div
+          class="grid grid-cols-1 md:grid-cols-4 gap-px bg-white/10 border border-white/10"
+        >
+          <div class="bg-black p-8 md:p-10">
+            <div class="label text-[#ea0000] mb-6">Phase 01</div>
+            <div class="font-display text-2xl mb-4">Acclimatize</div>
+            <div class="text-white/55 text-sm leading-relaxed">
+              A photographer and writer arrive two weeks early. They drink tea.
+              They walk slowly. They learn the altitude before the brief is
+              written.
+            </div>
+            <div class="mt-8 label text-white/30">3 weeks</div>
+          </div>
+          <div class="bg-black p-8 md:p-10">
+            <div class="label text-[#ea0000] mb-6">Phase 02</div>
+            <div class="font-display text-2xl mb-4">Listen</div>
+            <div class="text-white/55 text-sm leading-relaxed">
+              We meet the teahouse owners, the lamas, the yak herders. We ask
+              which season they would walk in, and we listen. The route is
+              shaped around their answer.
+            </div>
+            <div class="mt-8 label text-white/30">6 weeks</div>
+          </div>
+          <div class="bg-black p-8 md:p-10">
+            <div class="label text-[#ea0000] mb-6">Phase 03</div>
+            <div class="font-display text-2xl mb-4">Brief</div>
+            <div class="text-white/55 text-sm leading-relaxed">
+              Six travelers receive a 64-page printed brief. Hand-stitched in
+              Patan. Includes a phrasebook, a contour map, and the name of every
+              teahouse.
+            </div>
+            <div class="mt-8 label text-white/30">4 weeks</div>
+          </div>
+          <div class="bg-black p-8 md:p-10">
+            <div class="label text-[#ea0000] mb-6">Phase 04</div>
+            <div class="font-display text-2xl mb-4">Walk</div>
+            <div class="text-white/55 text-sm leading-relaxed">
+              Eighteen to twenty-two days on the trail. One guide, one cook,
+              porters as the route demands. No phones between breakfast and the
+              evening meal.
+            </div>
+            <div class="mt-8 label text-white/30">18–22 nights</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ TESTIMONIAL ============================ -->
+    <section
+      class="relative py-32 md:py-44 px-6 md:px-12"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-5xl mx-auto">
+        <div class="flex items-center gap-4 mb-16">
+          <div class="hairline"></div>
+          <span class="label text-white/40">Letter · 07</span>
+        </div>
+        <blockquote class="font-display-it text-3xl md:text-5xl leading-[1.15]">
+          "I walked for eighteen days in Mustang and forgot what my phone looked
+          like. The atelier understood that the walking was the point, not the
+          photographs. I came home with a notebook of wind sounds I cannot
+          shake."
+        </blockquote>
+        <div class="mt-10 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <div class="font-display text-lg">P. Tamang</div>
+            <div class="label text-white/40 mt-1">
+              Upper Mustang · June 2024
+            </div>
+          </div>
+          <a href="#" class="label text-white/50 hover-underline"
+            >Read the case study →</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ CTA / CONTACT ============================ -->
+    <section
+      id="contact"
+      class="relative py-32 md:py-48 px-6 md:px-12 border-t border-white/10"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="flex items-center gap-4 mb-12">
+          <div class="hairline"></div>
+          <span class="label text-white/40">Begin · 08</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
+          <div class="md:col-span-7">
+            <h2 class="font-display text-[10vw] md:text-[7vw] leading-[0.85]">
+              <span class="block">Begin</span>
+              <span class="block font-display-it">a brief.</span>
+            </h2>
+            <p class="mt-10 text-white/60 text-lg max-w-xl leading-relaxed">
+              We accept twelve trekkers per year. Tell us where the pull is — a
+              valley, a season, a feeling — and we will tell you, honestly,
+              whether we are the right atelier for it.
+            </p>
+            <div class="mt-12 grid grid-cols-2 gap-6 max-w-md">
+              <div>
+                <div class="label text-white/30 mb-2">Atelier</div>
+                <div class="text-sm text-white/70">
+                  Patan Dhoka, Lalitpur 44600<br />Kathmandu Valley, Nepal
+                </div>
+              </div>
+              <div>
+                <div class="label text-white/30 mb-2">Direct</div>
+                <div class="text-sm text-white/70">
+                  brief@sagarmatha-atelier.np<br />+977 1 555 0142
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form class="md:col-span-5 md:col-start-8 space-y-6">
+            <div>
+              <label class="label text-white/40 block mb-3"
+                >01 — Your name</label
+              >
+              <input
+                type="text"
+                class="w-full bg-transparent border-b border-white/15 py-3 text-white focus:border-[#ea0000] focus:outline-none transition-colors"
+                placeholder="Full name"
+              />
+            </div>
+            <div>
+              <label class="label text-white/40 block mb-3">02 — Email</label>
+              <input
+                type="email"
+                class="w-full bg-transparent border-b border-white/15 py-3 text-white focus:border-[#ea0000] focus:outline-none transition-colors"
+                placeholder="you@somewhere.com"
+              />
+            </div>
+            <div>
+              <label class="label text-white/40 block mb-3"
+                >03 — Route of interest</label
+              >
+              <select
+                class="w-full bg-transparent border-b border-white/15 py-3 text-white focus:border-[#ea0000] focus:outline-none transition-colors appearance-none"
+              >
+                <option style="background: #000">
+                  No preference — surprise me
+                </option>
+                <option style="background: #000">
+                  Sagarmatha · 27.99°N · Oct
+                </option>
+                <option style="background: #000">
+                  Annapurna Sanctuary · 28.53°N · Nov
+                </option>
+                <option style="background: #000">
+                  Upper Mustang · 29.18°N · Jun
+                </option>
+                <option style="background: #000">
+                  Langtang · 28.20°N · Apr
+                </option>
+                <option style="background: #000">
+                  Kanchenjunga · 27.70°N · Mar
+                </option>
+                <option style="background: #000">
+                  Upper Dolpo · 29.05°N · Sep
+                </option>
+                <option style="background: #000">
+                  Rara Lake · 29.53°N · May
+                </option>
+                <option style="background: #000">
+                  Lumbini · 27.47°N · Any season
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="label text-white/40 block mb-3"
+                >04 — A few words</label
+              >
+              <textarea
+                rows="3"
+                class="w-full bg-transparent border-b border-white/15 py-3 text-white focus:border-[#ea0000] focus:outline-none transition-colors resize-none"
+                placeholder="What are you looking for?"
+              ></textarea>
+            </div>
+            <button type="button" class="cta-pill mt-4">
+              <span class="dot"></span>Send the brief
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ FOOTER ============================ -->
+    <footer
+      class="relative pt-24 pb-10 px-6 md:px-12 border-t border-white/10"
+      style="z-index: 2; background: var(--bg)"
+    >
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-2 md:grid-cols-12 gap-10 mb-20">
+          <div class="col-span-2 md:col-span-5">
+            <div class="flex items-center gap-3 mb-6">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path
+                  d="M2 20 L11 2 L20 20 Z"
+                  stroke="#fff"
+                  stroke-width="1"
+                  fill="none"
+                />
+                <path
+                  d="M6 14 L11 6 L16 14"
+                  stroke="#ea0000"
+                  stroke-width="1"
+                  fill="none"
+                />
+                <circle cx="11" cy="14" r="1.2" fill="#ea0000" />
+              </svg>
+              <span class="font-display text-base">SAGARMĀTHĀ</span>
+            </div>
+            <div
+              class="font-display text-3xl md:text-5xl leading-[0.95] max-w-md"
+            >
+              A travel atelier<br />for the high Himal.
+            </div>
+            <div class="mt-8 text-white/40 text-sm max-w-sm leading-relaxed">
+              Twelve trekkers per year. Eight routes. One brief at a time.
+              Founded 2014, Patan, Kathmandu Valley.
+            </div>
+          </div>
+
+          <div class="md:col-span-2 md:col-start-7">
+            <div class="label text-white/30 mb-5">Routes</div>
+            <ul class="space-y-3 text-sm text-white/70">
+              <li><a href="#" class="hover-underline">Sagarmatha</a></li>
+              <li><a href="#" class="hover-underline">Annapurna</a></li>
+              <li><a href="#" class="hover-underline">Upper Mustang</a></li>
+              <li><a href="#" class="hover-underline">Langtang</a></li>
+              <li><a href="#" class="hover-underline">Kanchenjunga</a></li>
+              <li><a href="#" class="hover-underline">Upper Dolpo</a></li>
+              <li><a href="#" class="hover-underline">Rara Lake</a></li>
+              <li><a href="#" class="hover-underline">Lumbini</a></li>
+            </ul>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="label text-white/30 mb-5">Atelier</div>
+            <ul class="space-y-3 text-sm text-white/70">
+              <li><a href="#" class="hover-underline">Manifesto</a></li>
+              <li><a href="#" class="hover-underline">The Process</a></li>
+              <li><a href="#" class="hover-underline">Field Team</a></li>
+              <li><a href="#" class="hover-underline">Journal</a></li>
+              <li><a href="#" class="hover-underline">Archive</a></li>
+            </ul>
+          </div>
+
+          <div class="md:col-span-2">
+            <div class="label text-white/30 mb-5">Contact</div>
+            <ul class="space-y-3 text-sm text-white/70">
+              <li>brief@sagarmatha-atelier.np</li>
+              <li>+977 1 555 0142</li>
+              <li>Patan Dhoka, Lalitpur 44600<br />Kathmandu Valley, Nepal</li>
+              <li class="pt-3">
+                <a href="#" class="hover-underline">Instagram →</a>
+              </li>
+              <li><a href="#" class="hover-underline">Are.na →</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          class="border-t border-white/10 pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+        >
+          <div class="label text-white/30">
+            © 2025 Sagarmāthā Atelier Pvt. Ltd. — All rights reserved
+          </div>
+          <div class="flex items-center gap-6 label text-white/30 flex-wrap">
+            <span>N 27.67° / E 85.32°</span>
+            <span>·</span>
+            <span>PATAN 06:14</span>
+            <span>·</span>
+            <a href="#" class="hover-underline">Imprint</a>
+            <a href="#" class="hover-underline">Privacy</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ============================ SCRIPTS ============================ -->
+    <script type="module">
+      import * as THREE from "three";
+
+      const prefersReduced = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+
+      /* ---------- Lenis smooth scroll ---------- */
+      let lenis;
+      if (!prefersReduced) {
+        lenis = new Lenis({
+          duration: 1.15,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
+        function raf(t) {
+          lenis.raf(t);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+      }
+
+      /* ---------- GSAP ---------- */
+      gsap.registerPlugin(ScrollTrigger);
+      if (lenis) lenis.on("scroll", ScrollTrigger.update);
+
+      /* ---------- Custom cursor ---------- */
+      if (!isCoarse) {
+        const cur = document.getElementById("custom-cursor");
+        const target = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        const pos = { x: target.x, y: target.y };
+        let hover = false;
+        addEventListener("mousemove", (e) => {
+          target.x = e.clientX;
+          target.y = e.clientY;
+        });
+        addEventListener("mouseover", (e) => {
+          const t = e.target;
+          hover = !!t.closest(
+            "a,button,input,select,textarea,.media,[data-cursor]",
+          );
+        });
+        (function loop() {
+          pos.x += (target.x - pos.x) * 0.18;
+          pos.y += (target.y - pos.y) * 0.18;
+          const s = hover ? 48 : 12;
+          cur.style.transform = `translate(${pos.x - s / 2}px, ${pos.y - s / 2}px)`;
+          cur.style.width = cur.style.height = s + "px";
+          cur.style.opacity = hover ? 0.55 : 1;
+          requestAnimationFrame(loop);
+        })();
+      }
+
+      /* ---------- Particle field ---------- */
+      let particleVisible = true;
+      function initParticles() {
+        if (prefersReduced) return;
+        const canvas = document.getElementById("particle-canvas");
+        const renderer = new THREE.WebGLRenderer({
+          canvas,
+          alpha: true,
+          antialias: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(
+          60,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          100,
+        );
+        camera.position.z = 8;
+
+        const COUNT = window.innerWidth < 768 ? 600 : 1200;
+        const TINT = Math.floor(COUNT * 0.12);
+
+        function makeField(count, color, scale) {
+          const positions = new Float32Array(count * 3);
+          const sizes = new Float32Array(count);
+          const offsets = new Float32Array(count);
+          for (let i = 0; i < count; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 20;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 14;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 12;
+            sizes[i] = Math.random() * scale + 0.4;
+            offsets[i] = Math.random() * Math.PI * 2;
+          }
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+          geo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+          geo.setAttribute("aOffset", new THREE.BufferAttribute(offsets, 1));
+          const mat = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 0 },
+              uColor: { value: new THREE.Color(color) },
+            },
+            vertexShader: `
+        attribute float aSize; attribute float aOffset; uniform float uTime; varying float vAlpha;
+        void main(){
+          vec3 p = position;
+          p.y += sin(uTime*0.3 + aOffset) * 0.45;
+          p.x += cos(uTime*0.25 + aOffset*0.7) * 0.25;
+          vec4 mv = modelViewMatrix * vec4(p,1.0);
+          gl_PointSize = aSize * (180.0 / -mv.z);
+          gl_Position = projectionMatrix * mv;
+          vAlpha = 0.55 + 0.45 * sin(uTime*0.6 + aOffset);
+        }`,
+            fragmentShader: `
+        varying float vAlpha; uniform vec3 uColor;
+        void main(){
+          vec2 uv = gl_PointCoord - vec2(0.5);
+          if (length(uv) > 0.5) discard;
+          gl_FragColor = vec4(uColor, smoothstep(0.5, 0.0, length(uv)) * vAlpha * 0.55);
+        }`,
+            transparent: true,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
+          });
+          return new THREE.Points(geo, mat);
+        }
+
+        const primary = makeField(COUNT, 0xffffff, 1.6);
+        const accent = makeField(TINT, 0xea0000, 1.2);
+        scene.add(primary);
+        scene.add(accent);
+
+        const mouse = { x: 0, y: 0 };
+        const rot = { x: 0, y: 0 };
+        addEventListener("mousemove", (e) => {
+          mouse.x = (e.clientX / window.innerWidth - 0.5) * 0.4;
+          mouse.y = (e.clientY / window.innerHeight - 0.5) * 0.4;
+        });
+
+        const clock = new THREE.Clock();
+        function render() {
+          if (particleVisible) {
+            const t = clock.getElapsedTime();
+            primary.material.uniforms.uTime.value = t;
+            accent.material.uniforms.uTime.value = t;
+            rot.y += (mouse.x - rot.y) * 0.04;
+            rot.x += (mouse.y - rot.x) * 0.04;
+            scene.rotation.y = rot.y;
+            scene.rotation.x = rot.x;
+            renderer.render(scene, camera);
+          }
+          requestAnimationFrame(render);
+        }
+        render();
+
+        addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const obs = new IntersectionObserver((entries) => {
+          particleVisible = entries[0].isIntersecting;
+        });
+        obs.observe(canvas);
+      }
+      initParticles();
+
+      /* ---------- Hero entrance ---------- */
+      document.fonts.ready.then(() => {
+        gsap.to("[data-line]", {
+          yPercent: 0,
+          duration: 1.2,
+          ease: "power4.out",
+          stagger: 0.13,
+          delay: 0.2,
+        });
+        setTimeout(() => {
+          document
+            .querySelectorAll("[data-rise]")
+            .forEach((el) => el.classList.add("is-in"));
+        }, 600);
+      });
+
+      /* ---------- Image-rises observer ---------- */
+      const riseObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) {
+              en.target.classList.add("is-in");
+              riseObserver.unobserve(en.target);
+            }
+          });
+        },
+        { threshold: 0.15 },
+      );
+      document
+        .querySelectorAll(".rise-image")
+        .forEach((el) => riseObserver.observe(el));
+
+      /* ---------- Scrub-blur-words manifesto ---------- */
+      document.fonts.ready.then(() => {
+        const textEl = document.getElementById("manifesto-text");
+        if (!textEl) return;
+        const words = textEl.textContent.trim().split(/\s+/);
+        textEl.innerHTML = words
+          .map((w) => `<span class="word">${w}</span>`)
+          .join(" ");
+
+        gsap
+          .timeline({
+            scrollTrigger: {
+              trigger: "#manifesto-container",
+              start: "top 82%",
+              end: "center 55%",
+              scrub: true,
+            },
+          })
+          .fromTo(
+            "#manifesto-text .word",
+            { opacity: 0, filter: "blur(12px) brightness(30%)" },
+            {
+              opacity: 1,
+              filter: "blur(0px) brightness(100%)",
+              stagger: 0.04,
+              ease: "sine.out",
+            },
+          );
+      });
+
+      /* ---------- Horizontal pin scroll ---------- */
+      function setupPin() {
+        const viewport = document.getElementById("pin-viewport");
+        const track = document.getElementById("pin-track");
+        const progress = document.getElementById("pin-progress");
+        const indexEl = document.getElementById("pin-index");
+        if (!viewport || !track) return;
+        if (window.innerWidth < 1024) return;
+
+        let scrollWidth = 0;
+        let lastY = window.scrollY;
+        let skewTimer;
+
+        function recalc() {
+          scrollWidth = track.scrollWidth - window.innerWidth;
+          viewport.style.height =
+            window.innerHeight + Math.max(0, scrollWidth) + "px";
+        }
+        recalc();
+        addEventListener("resize", recalc);
+
+        addEventListener(
+          "scroll",
+          () => {
+            const top = viewport.getBoundingClientRect().top;
+            if (top <= 0 && top >= -scrollWidth) {
+              const p = -top / scrollWidth;
+              track.style.transform = `translate3d(${-p * scrollWidth}px,0,0)`;
+              if (progress) progress.style.width = p * 100 + "%";
+              if (indexEl) {
+                const idx = Math.min(8, Math.floor(p * 8) + 1);
+                indexEl.textContent = String(idx).padStart(2, "0");
+              }
+
+              const v = window.scrollY - lastY;
+              lastY = window.scrollY;
+              const skew = Math.max(-10, Math.min(10, v * 0.5));
+              track
+                .querySelectorAll(".dest-card")
+                .forEach((c) => (c.style.transform = `skewX(${skew}deg)`));
+              clearTimeout(skewTimer);
+              skewTimer = setTimeout(() => {
+                track
+                  .querySelectorAll(".dest-card")
+                  .forEach((c) => (c.style.transform = "skewX(0deg)"));
+              }, 200);
+            } else if (top > 0) {
+              track.style.transform = "translate3d(0,0,0)";
+            }
+          },
+          { passive: true },
+        );
+      }
+      setupPin();
+
+      /* ---------- Section hairline stagger on enter ---------- */
+      const hairObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) {
+              const h = en.target.querySelector(".hairline");
+              if (h) {
+                gsap.fromTo(
+                  h,
+                  { scaleX: 0, transformOrigin: "left" },
+                  { scaleX: 1, duration: 0.9, ease: "power3.out" },
+                );
+              }
+              hairObserver.unobserve(en.target);
+            }
+          });
+        },
+        { threshold: 0.2 },
+      );
+      document
+        .querySelectorAll("section")
+        .forEach((s) => hairObserver.observe(s));
+
+      /* ---------- Stat number count-up ---------- */
+      const statObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((en) => {
+            if (en.isIntersecting) {
+              const el = en.target;
+              const target = parseInt(el.dataset.target, 10);
+              if (isNaN(target)) return;
+              const dur = 1400;
+              const start = performance.now();
+              function tick(now) {
+                const t = Math.min(1, (now - start) / dur);
+                const e = 1 - Math.pow(1 - t, 3);
+                el.textContent = Math.floor(target * e);
+                if (t < 1) requestAnimationFrame(tick);
+                else el.textContent = target;
+              }
+              requestAnimationFrame(tick);
+              statObserver.unobserve(el);
+            }
+          });
+        },
+        { threshold: 0.4 },
+      );
+      document
+        .querySelectorAll(".stat-num[data-target]")
+        .forEach((el) => statObserver.observe(el));
+    </script>
+  </body>
+</html>
