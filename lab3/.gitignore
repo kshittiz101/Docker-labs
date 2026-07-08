@@ -1,0 +1,160 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+
+# Django
+*.sqlite3
+*.sqlite
+db.sqlite3-journal
+/media/
+/static/
+/staticfiles/
+.media/
+.static/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+virtualenv/
+.virtualenv/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.spotlight/
+.Trashes/
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+*.cover
+.hypothesis/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Logs
+*.log
+logs/
+log/
+debug.log
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Django Migrations (Optional - Uncomment if you generate migrations locally)
+# */migrations/*
+# !*/migrations/__init__.py
+
+# Docker
+*.pid
+docker-compose.override.yml
+.docker/
+
+# AWS / Cloud
+.pem
+*.pem
+.aws/
+credentials
+config
+
+# Secrets
+secrets/
+secret/
+*.key
+*.p12
+*.pfx
+*.pem
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Package manager
+pip-log.txt
+pip-delete-this-directory.txt
+pip-wheel-metadata/
+share/python-wheels/
+.installed.cfg
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.manifest
+*.dist-info/
+*.egg-info/
+
+# Misc
+.cache/
+venv/
+.virtualenv/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+
+# Python coverage
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Translations
+*.mo
+
+# Django debug toolbar (if used)
+debug_toolbar.*
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Pylint
+.pylint.d/
+
+# Files that might appear in the root of a Django project
+.env
+.project
+.pydevproject
+.settings.py.swp
