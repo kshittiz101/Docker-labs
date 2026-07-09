@@ -27,7 +27,7 @@ RUN pip install --upgrade pip && \
 COPY . .
 
 # Run Django commands (optional - only if you want them during build)
-# RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput
 # RUN python manage.py migrate
 
 # Expose port
